@@ -162,6 +162,7 @@ const { Settings } = require("./settings");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
+const CryptoUtil = require("./crypto-util")
 
 app.use(express.json());
 
@@ -182,6 +183,8 @@ let needSetup = false;
 
 (async () => {
     Database.init(args);
+	// CHENSTA: init crypto
+	CryptoUtil.init();
     await initDatabase(testMode);
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
@@ -662,8 +665,14 @@ let needSetup = false;
                 bean.user_id = socket.userID;
 
                 bean.validate();
+				// CHENSTA: MONITOR STORED HERE
+				// Encrypt Secret Data Here
+				bean.basic_auth_pass = CryptoUtil.encrypt(bean.basic_auth_pass);
+                bean.oauth_client_secret = CryptoUtil.encrypt(bean.oauth_client_secret);
+                bean.mqttPassword = CryptoUtil.encrypt(bean.mqttPassword);
+                bean.radiusPassword = CryptoUtil.encrypt(bean.radiusPassword);
 
-                await R.store(bean);
+				await R.store(bean);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
@@ -731,7 +740,7 @@ let needSetup = false;
                 bean.body = monitor.body;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
-                bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.basic_auth_pass = CryptoUtil.encrypt(monitor.basic_auth_pass);
                 bean.timeout = monitor.timeout;
                 bean.oauth_client_id = monitor.oauth_client_id;
                 bean.oauth_client_secret = monitor.oauth_client_secret;
