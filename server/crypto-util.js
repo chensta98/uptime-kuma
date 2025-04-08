@@ -2,7 +2,8 @@ const crypto = require('crypto');
 
 class CryptoUtil {
 	
-	static key = Buffer.from('MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=', 'base64');
+	// DO NOT USE WITHOUT INIT
+	static key = "01234567890123456789012345678901";
 
 	static init() {
 		// Future Feature: read key from key storage server
@@ -29,16 +30,20 @@ class CryptoUtil {
 	}
 
 	static decrypt(ivCiphertextB64) {
- 		const ivCiphertext = Buffer.from(ivCiphertextB64, 'base64url');
-		const iv = ivCiphertext.subarray(0, 16);
-		const ciphertext = ivCiphertext.subarray(16);
-		const cipher = crypto.createDecipheriv(
-    		'aes-256-cbc',
-    		CryptoUtil.key,
-    		iv
-  		);
-  		let decrypted = Buffer.concat([cipher.update(ciphertext), cipher.final()]);
-  		return decrypted.toString('utf-8');
+		if(ivCipherTextB64 != null) {
+				const ivCiphertext = Buffer.from(ivCiphertextB64, 'base64url');
+				const iv = ivCiphertext.subarray(0, 16);
+				const ciphertext = ivCiphertext.subarray(16);
+				const cipher = crypto.createDecipheriv(
+					'aes-256-cbc',
+					CryptoUtil.key,
+					iv
+				);
+				let decrypted = Buffer.concat([cipher.update(ciphertext), cipher.final()]);
+				return decrypted.toString('utf-8');
+		} else {
+			return null
+		}
 	}
 }
 
